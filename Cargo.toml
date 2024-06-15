@@ -1,0 +1,22 @@
+[workspace.package]
+name = "depscanner"
+version = "0.1.0"
+edition = "2021"
+description = "dependency scanning tooling"
+repository = "https://github.com/dommyrock/depscanner"
+keywords = ["blas", "tensor", "machine-learning"]
+categories = ["science"]
+license = "MIT OR Apache-2.0"
+
+[workspace]
+members = ["deps_fetcher", "index_scanner"]
+
+resolver = "2"
+
+[workspace.dependencies]
+reqwest = "0.12.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.38.0", features = ["macros","rt-multi-thread","sync","time"] }
+anyhow = { version = "1.0.86" }
+headless_chrome = "1.0.10"
