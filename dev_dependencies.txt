@@ -1,0 +1,13 @@
+[dev-dependencies]
+bstr = "1.6.2"
+tempdir = "0.3.7"
+tempfile = "3.8.0"
+maplit = "1.0.2"
+tracing-test = "0.2.4"
+passwords = "3.1.13"
+const_format = "0.2.31"
+hashicorp_vault = "2.1.1"
+curl = "0.4.44"
+dotenv = "0.15.0"
+faux = "0.1.10"
+

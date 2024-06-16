@@ -26,11 +26,6 @@ struct Dep {
     crates_url: Option<String>,
 }
 
-/*
-docs
-https://doc.rust-lang.org/cargo/reference/registry-index.html#index-files
-*/
-
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     //https://index.crates.io/<first_two>/<next_two>/<crate_name>

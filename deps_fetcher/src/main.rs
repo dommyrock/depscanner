@@ -1,14 +1,13 @@
-use anyhow::{anyhow, Error};
+use anyhow::Error;
 use headless_chrome::{Browser, LaunchOptionsBuilder};
-use std::time::Duration;
 use std::fs::File;
-use std::io::{Write, BufWriter};
-
+use std::io::{BufWriter, Write};
+use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let options = LaunchOptionsBuilder::default()
-        .headless(false)
+        // .headless(false)
         .build()
         .unwrap();
 
@@ -22,33 +21,39 @@ async fn main() -> Result<(), Error> {
             std::thread::sleep(Duration::from_millis(1500));
             match tab.find_element("#read-only-cursor-text-area") {
                 Ok(elm) => {
-                    let _r: Result<Vec<String>, Error> = elm.get_content().and_then(|content| {
-                        let mut collecting = false; // Flag to start collecting after [dependencies]
-                        let mut deps_lines = Vec::new(); // To store the collected lines
+                    let _r: Result<(), Error> = elm.get_content().and_then(|content| {
+                        let (mut collecting, mut collecting_dev_deps) = (false, false);
+                        let mut deps_lines = Vec::new();
+                        let mut dev_deps_lines = Vec::new();
 
-                        // Iterate over lines and collect until [dev-dependencies]
                         for line in content.lines() {
-                            if line.trim().starts_with("[dev-dependencies]") {
-                                break;
-                            }
-                            if line.trim().starts_with("[dependencies]") {
-                                collecting = true;
+                            match line.trim() {
+                                s if s.starts_with("[dev-dependencies]") => {
+                                    collecting_dev_deps = true;
+                                    collecting = false;
+                                }
+                                s if s.starts_with("[")
+                                    && !line.trim().contains("dependencies")
+                                    && !line.trim().contains("dev-dependencies") =>
+                                {
+                                    break;
+                                }
+                                s if s.starts_with("[dependencies]") => {
+                                    collecting = true;
+                                    collecting_dev_deps = false;
+                                }
+                                _ => {}
                             }
                             if collecting {
                                 deps_lines.push(line.to_string());
+                            } else if collecting_dev_deps {
+                                dev_deps_lines.push(line.to_string());
                             }
                         }
 
-                        if collecting {
-
-                            for l in &deps_lines {
-                                println!("{l}");
-                            }
-
-                            Ok(deps_lines)
-                        } else {
-                            Err(anyhow!("No [dependencies] section found"))
-                        }
+                        write_lines_to_file(&deps_lines, "dependencies.txt")?;
+                        write_lines_to_file(&dev_deps_lines, "dev_dependencies.txt")?;
+                        Ok(())
                     });
                 }
                 Err(e) => {
@@ -58,6 +63,16 @@ async fn main() -> Result<(), Error> {
         } else {
             eprint!("Navigation to {url} failed");
         }
+    }
+    Ok(())
+}
+
+fn write_lines_to_file(lines: &[String], file_name: &str) -> Result<(), std::io::Error> {
+    let file = File::create(file_name)?;
+    let mut writer = BufWriter::new(file);
+    for line in lines {
+        writer.write_all(line.as_bytes())?;
+        writer.write_all(b"\n")?;
     }
     Ok(())
 }
