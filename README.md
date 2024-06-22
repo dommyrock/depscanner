@@ -10,7 +10,6 @@ cargo run --bin deps_fetcher
 
 ```
 
-
 > Docs <br>
 https://doc.rust-lang.org/cargo/reference/registry-index.html#index-files
 
